@@ -1,14 +1,17 @@
 import { NgModule } from '@angular/core';
-
+import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 
 // Services
-import { ApiService } from './services/api.service';
-import { AuthenticationService } from './services/auth.service';
+import { ApiService, AuthenticationService, TokenService } from './services';
+
+// Layouts
+import { HeaderComponent } from './layouts';
 
 @NgModule({
-    declarations: [],
-    imports: [HttpClientModule],
-    providers: [ApiService, AuthenticationService],
+    declarations: [HeaderComponent],
+    imports: [BrowserModule, HttpClientModule],
+    providers: [ApiService, AuthenticationService, TokenService],
+    exports: [HeaderComponent],
 })
 export class CoreModule {}

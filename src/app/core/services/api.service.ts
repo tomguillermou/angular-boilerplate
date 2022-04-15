@@ -1,28 +1,39 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { map } from 'rxjs/operators';
+
+import { environment } from '../../../environments/environment';
+
+import { TokenService } from './token.service';
 
 @Injectable()
 export class ApiService {
-    public readonly apiUrl = 'http://localhost:3000';
+    constructor(private _httpClient: HttpClient, private _tokenService: TokenService) {}
 
-    constructor(private httpClient: HttpClient) {}
+    public get(resource: string, withAuthentication = false) {
+        let headers = {};
 
-    private get headersWithToken() {
+        if (withAuthentication) {
+            headers = this.getHeadersWithAuthentication();
+        }
+
+        return this._httpClient.get(environment.apiUrl + resource, { headers });
+    }
+
+    public post<TResponseBody>(resource: string, body: unknown, withAuthentication = false) {
+        let headers = {};
+
+        if (withAuthentication) {
+            headers = this.getHeadersWithAuthentication();
+        }
+
+        return this._httpClient.post<TResponseBody>(environment.apiUrl + resource, body, {
+            headers,
+        });
+    }
+
+    private getHeadersWithAuthentication(): HttpHeaders {
         return new HttpHeaders({
-            Authorization: 'Bearer ' + localStorage.getItem('token'),
-        });
-    }
-
-    public get(route: string) {
-        return this.httpClient.get(this.apiUrl + route, {
-            headers: this.headersWithToken,
-        });
-    }
-
-    public post(route: string, body: { [key: string]: {} }) {
-        return this.httpClient.post(this.apiUrl + route, body, {
-            headers: this.headersWithToken,
+            Authorization: 'Bearer ' + this._tokenService.getToken(),
         });
     }
 }

@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
+
+import { ApiService } from './api.service';
+import { TokenService } from './token.service';
 
 interface LoginRequestBody {
     email: string;
@@ -21,35 +23,32 @@ interface AuthResponseBody {
 
 @Injectable()
 export class AuthenticationService {
-    constructor(private httpClient: HttpClient) {}
+    constructor(private _apiService: ApiService, private _tokenService: TokenService) {}
 
     public login(requestBody: LoginRequestBody) {
-        return this.httpClient
-            .post<AuthResponseBody>('http://localhost:3000/auth/login', requestBody)
-            .pipe(
-                map((responseBody) => {
-                    localStorage.setItem('token', responseBody.token);
-                    return responseBody;
-                })
-            );
+        return this._apiService.post<AuthResponseBody>('/auth/login', requestBody).pipe(
+            map((responseBody) => {
+                this._tokenService.setToken(responseBody.token);
+                return responseBody;
+            })
+        );
     }
 
     public register(requestBody: RegisterRequestBody) {
-        return this.httpClient
-            .post<AuthResponseBody>('http://localhost:3000/auth/register', requestBody)
-            .pipe(
-                map((responseBody) => {
-                    localStorage.setItem('token', responseBody.token);
-                    return responseBody;
-                })
-            );
+        return this._apiService.post<AuthResponseBody>('/auth/register', requestBody).pipe(
+            map((responseBody) => {
+                this._tokenService.setToken(responseBody.token);
+                return responseBody;
+            })
+        );
     }
 
-    public removeToken(): void {
-        localStorage.removeItem('token');
+    public logout(): void {
+        this._tokenService.removeToken();
     }
 
-    public getToken(): string | null {
-        return localStorage.getItem('token');
+    public async isLoggedIn(): Promise<boolean> {
+        // Improve by making call to API to check token authenticity
+        return typeof this._tokenService.getToken() === 'string';
     }
 }
